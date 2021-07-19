@@ -1,0 +1,97 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: VPC Script
+file_extensions: [vpc, vgc]
+scope: source.vpc
+
+contexts:
+  prototype:
+    - include: comments
+
+  main:
+    - include: block
+    - include: conditionals
+    - include: keywords
+    - include: keys
+    - include: strings
+    - include: numbers
+
+  keywords:
+    - match: '(\$(?i:macro))\s+(\w+)'
+      captures:
+        1: keyword.control.vpc
+        2: entity.name.constant.preprocessor.vpc
+    - match: '(\$)((?i:include|macro|macroemptystring|macrorequired|macrorequiredallowempty|loadaddressmacro|loadaddressmacroalias|loadaddressmacroauto|loadaddressmacroauto_padded|ignoreredundancywarning|linux|conditional))\b'
+      captures:
+        1: keyword.control.vpc
+        2: keyword.operator.word.vpc
+
+  keys:
+    - match: '(\$)((?i:additionaldependencies|additionaldocumentfiles|additionalincludedirectories|additionallibrarydirectories|additionalmanifestdependencies|additionalmanifestfiles|additionaloptions|addmoduletoassembly|allowisolation|asmlistlocation|assembleroutput|assemblyidentity|assemblylinkresource|attach|baseaddress|basicruntimechecks|browsefile|browseinformation|buffersecuritycheck|buildlogfile|callingconvention|characterset|clrimagetype|clrthreadattribute|clrunmanagedcodecheck|command|commandarguments|commandline|commonlanguageruntimesupport|compileas|compiler|componentfilename|configuration|configurationtype|create/usepchthroughfile|create/useprecompiledheader|culture|custombuildstep|debuggableassembly|debuggertype|debugging|debuginformationformat|defaultcharunsigned|delayloadeddll|delayloadeddlls|delaysign|dependencyinformationfile|description|detect64bitportabilityissues|disablelanguageextensions|disablespecificwarnings|documentlibrarydependencies|driver|embedmanagedresourcefile|embedmanifest|enablebrowseinformation|enablec\+\+exceptions|enablecomdatfolding|enableenhancedinstructionset|enablefibersafeoptimizations|enablefloatingpointexceptions|enablefunctionlevellinking|enableincrementallinking|enableintrinsicfunctions|enablelargeaddresses|enableminimalrebuild|enableruntimetypeinfo|enablestringpooling|entrypoint|environment|errorreporting|excludedfrombuild|executabledirectories|expandattributedsource|exportnamedfunctions|extensionstodeleteonclean|favorsizeorspeed|file|fixedbaseaddress|floatingpointmodel|folder|force#using|forceconformanceinforloopscope|forceincludes|forcesymbolreferences|functionorder|gameoutputfile|games|gcc_extracompilerflags|gcc_extralinkerflags|general|generatecatalogfiles|generatedebuginfo|generatemanifest|generatepreprocessedfile|generateprogramdatabasefile|generatexmldocumentationfiles|group|heapcommitsize|heapreservesize|ignorealldefaultlibraries|ignoreembeddedidl|ignoreimportlibrary|ignorespecificlibrary|ignorestandardincludepath|imagehassafeexceptionhandlers|implib|importlibrary|inheritedprojectpropertysheets|inlinefunctionexpansion|inputresourcemanifests|intermediatedirectory|keepcomments|keycontainer|keyfile|lib|librarian|linker|linklibrarydependencies|linktimecodegeneration|manifestfile|manifestresourcefile|manifesttool|mapexports|mergeenvironment|mergeidlbasefilename|mergesections|midlcommands|minimizecrtuseinatl|moduledefinitionfile|moduledefinitionfilename|multiprocessorcompilation|noentrypoint|objectfilename|omitdefaultlibrarynames|omitframepointers|openmpsupport|optimization|optimizeforwindows98|optimizerlevel|outputdirectory|outputdocumentfile|outputfile|outputmanifestfile|outputs|platformtoolset|postbuildevent|prebuildevent|precompiledheaderfile|prelinkevent|preprocessordefinitions|profile|profileguideddatabase|programdatabasefilename|project|randomizedbaseaddress|references|registeroutput|registrarscriptfile|replacementsfile|resolve#usingreferences|resourcefilename|resources|runtimelibrary|setchecksum|showincludes|showprogress|smallertypecheck|sqldebugging|stackcommitsize|stackreservesize|stripprivatesymbols|structmemberalignment|subsystem|suppressstartupbanner|swaprunfromcd|swaprunfromnetwork|symbolvisibility|targetextension|targetmachine|targetname|terminalserver|treatwarningsaserrors|treatwchar_tasbuiltintype|turnoffassemblygeneration|typelibrary|typelibraryfile|typelibresourceid|uacexecutionlevel|undefineallpreprocessordefinitions|undefinepreprocessordefinitions|updatefilehashes|updatefilehashessearchpath|usefat32workaround|usefullpaths|uselibrarydependencyinputs|useofatl|useofmfc|useunicoderesponsefiles|validateintellisense|verboseoutput|version|warninglevel|wholeprogramoptimization|workingdirectory|xmldocumentationfilename|xmldocumentgenerator))\b'
+      captures:
+        1: keyword.control.vpc
+        2: keyword.declaration.vpc
+    - match: '(\$)(\S+)'
+      captures:
+        1: keyword.control.vpc
+        2: string.unquoted.key.vpc
+    - match: '\w+\s'
+      scope: string.unquoted.key.vpc
+
+  numbers:
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.vpc
+
+  strings:
+    - match: '"'
+      scope: punctuation.definition.string.begin.vpc
+      push: inside_string
+
+  inside_string:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.vpc
+    - match: '\$\w+'
+      scope: constant.other.macro.vpc
+    - match: '"'
+      scope: punctuation.definition.string.end.vpc
+      pop: true
+
+  comments:
+    - match: '//'
+      scope: punctuation.definition.comment.vpc
+      push:
+        - meta_scope: comment.line.double-slash.vpc
+        - match: $\n?
+          pop: true
+
+  conditionals:
+    - match: \[
+      scope: keyword.control.conditional.begin.vpc
+      push:
+        - meta_scope: meta.brackets.vpc
+        - match: '(!|&&|\|\|)'
+          scope: keyword.operator.logical.vpc
+        - match: '(\(|\))'
+          scope: punctuation.section.parens.vpc
+        - match: '\$\w+'
+          scope: constant.other.macro.vpc
+        - match: \]
+          scope: keyword.control.conditional.end.vpc
+          pop: true
+        - include: conditionals
+    - match: \]
+      scope: invalid.illegal.stray-bracket-end.vpc
+
+  block:
+    - match: \{
+      scope: punctuation.section.block.begin.vpc
+      push:
+        - meta_scope: meta.block.vpc
+        - include: keys
+        - match: \}
+          scope: punctuation.section.block.end.vpc
+          pop: true
+        - include: main
+    - match: \}
+      scope: invalid.illegal.stray-bracket-end.vpc
